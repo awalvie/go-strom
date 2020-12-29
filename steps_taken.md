@@ -25,6 +25,12 @@ You do,
 
 #### Pick one to work on, torrent or magnet
 
-Torrent
+Torrent.
 
 #### Input a torrent file
+
+Take input as a torrent file.
+
+#### Parse torrent file
+
+Write a parser for the torrent file and stick the data into a structure.

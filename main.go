@@ -13,24 +13,25 @@ const (
 	about = `go-strom is a cli bittorrent client written in Go by awalvie.
 
 Usage: go-strom <torrent | magnet> <destination> [-h]
+Example: go-strom -t ~/torrent.file -d ~/Downloads
 
 Options:
 `
 
 	// more info message when the program is called incorrectly
-	moreInfo = `Try 'go-strom --help' for more information.`
+	moreInfo = "Try 'go-strom --help' for more information.\n"
 )
 
-func err(err string) {
-	fmt.Fprintln(flag.CommandLine.Output(), "ERROR:", err)
-	fmt.Fprintln(flag.CommandLine.Output(), moreInfo)
+func _error(err string) {
+	fmt.Fprintf(flag.CommandLine.Output(), "ERROR: "+err+"\n"+moreInfo)
+	os.Exit(1)
 }
 
 func main() {
 	// options for the cli
 	torrentPtr := flag.String("t", "", "Path to torrent file.")
 	magnetPtr := flag.String("m", "", "Magnet hash.")
-	// locationPtr := flag.String("d", "./", "Download location for the torrent.")
+	locationPtr := flag.String("d", "./", "Download location for the torrent.")
 
 	// usage message that is rendered when -h|--help is used
 	flag.Usage = func() {
@@ -43,13 +44,21 @@ func main() {
 
 	// both flags can't be empty
 	if *torrentPtr == "" && *magnetPtr == "" {
-		err("A torrent file or magnet link are required.")
-		os.Exit(1)
+		_error("A torrent file or magnet link is required.")
 	}
 
 	// one option needs to be chosen out of torrent or magnet
 	if *torrentPtr != "" && *magnetPtr != "" {
-		err("Choose either torrent or magnet, not both.")
-		os.Exit(1)
+		_error("Choose either torrent or magnet, not both.")
+	}
+
+	// download torrent using torrent file
+	if *torrentPtr != "" {
+		downloadTorrent(*torrentPtr, *locationPtr)
+	}
+
+	// download torrent using magnet infohash
+	if *magnetPtr != "" {
+		downloadMagnet(*magnetPtr)
 	}
 }
