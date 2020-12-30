@@ -5,6 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -54,6 +55,7 @@ func main() {
 
 	// download torrent using torrent file
 	if *torrentPtr != "" {
+		log.Printf("Downloading using torrent file")
 		downloadTorrent(*torrentPtr, *locationPtr)
 	}
 
