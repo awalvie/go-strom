@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "fmt"
+	"fmt"
 	"log"
 )
 
@@ -21,5 +21,10 @@ func downloadTorrent(torrentFile string, location string) {
 		}
 	}
 
-	parseTorrent(torrentFile)
+	torrent, err := parseTorrent(torrentFile)
+	if err != nil {
+		_error("Problem parsing torrent file, ensure your torrent file is not corrupt")
+	}
+
+	fmt.Println(torrent)
 }

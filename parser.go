@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/jackpal/bencode-go"
@@ -31,7 +30,7 @@ type TorrentFile struct {
 	Name        string
 }
 
-func open(path string) (TorrentFile, error) {
+func parseTorrent(path string) (TorrentFile, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return TorrentFile{}, err
@@ -47,7 +46,56 @@ func open(path string) (TorrentFile, error) {
 	return bto.toTorrentFile()
 }
 
-func parseTorrent(torrentFile string) {
-	log.Println("Parsing torrent file", torrentFile)
-	open(torrentFile)
+func (bto *bencodeTorrent) toTorrentFile() (TorrentFile, error) {
+	infoHash, err := bto.Info.hash()
+	if err != nil {
+		return TorrentFile{}, err
+	}
+
+	pieceHashes, err := bto.Info.pieceHashes()
+	if err != nil {
+		return TorrentFile{}, err
+	}
+
+	t := TorrentFile{
+		Announce:    bto.Announce,
+		InfoHash:    infoHash,
+		PieceHashes: pieceHashes,
+		PieceLength: bto.Info.PieceLength,
+		Length:      bto.Info.Length,
+		Name:        bto.Info.Name,
+	}
+
+	return t, nil
+
+}
+
+func (info *bencodeInfo) pieceHashes() ([][20]byte, error) {
+	hashLen := 20
+	buf := []byte(info.Pieces)
+
+	if len(buf)%hashLen != 0 {
+		err := fmt.Errorf("Received pieces with incorrect length %d", len(buf))
+		return nil, err
+	}
+
+	numHashes := len(buf) / hashLen
+	hashes := make([][20]byte, numHashes)
+
+	for i := 0; i < numHashes; i++ {
+		copy(hashes[i][:], buf[i*hashLen:i+1*hashLen])
+	}
+
+	return hashes, nil
+
+}
+
+func (info *bencodeInfo) hash() ([20]byte, error) {
+	var buf bytes.Buffer
+	err := bencode.Marshal(&buf, *info)
+	if err != nil {
+		return [20]byte{}, err
+	}
+	h := sha1.Sum(buf.Bytes())
+	return h, nil
 }
