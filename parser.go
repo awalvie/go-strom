@@ -83,7 +83,7 @@ func (info *bencodeInfo) pieceHashes() ([][20]byte, error) {
 	hashes := make([][20]byte, numHashes)
 
 	for i := 0; i < numHashes; i++ {
-		copy(hashes[i][:], buf[i*hashLen:i+1*hashLen])
+		copy(hashes[i][:], buf[i*hashLen:(i+1)*hashLen])
 	}
 
 	return hashes, nil
